@@ -1,6 +1,6 @@
 /*eslint-disable*/
 import { connect } from 'react-redux';
-import { showModalCreator, inputNameCreator } from '../reducers/gameReducer';
+import { showModalCreator, inputNameCreator, randomCreator } from '../reducers/gameReducer';
 import gameApp from '../components/gameApp';
 
 const mapStateToProps = (state) => {
@@ -11,11 +11,14 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    inputName: (text) => {
+    inputSec: (text) => {
       dispatch(inputNameCreator(text));
     },
     showModal: (value) => {
       dispatch(showModalCreator(value));
+    },
+    random: (value) => {
+      dispatch(randomCreator(value));
     },
   };
 };

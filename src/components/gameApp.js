@@ -1,124 +1,132 @@
 import React, { useState, useEffect } from 'react';
-import _random from 'lodash/random';
 import _times from 'lodash/times';
-import Modal from 'react-bootstrap/Modal';
-import Button from 'react-bootstrap/Button';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import _sample from 'lodash/sample';
+import _remove from 'lodash/sample';
+import classNames from 'classnames';
+import Modal from '../components/modal';
 
 
-const gameApp = (props) => {
-  const [firstGame, setFirstGame] = useState(false);
-  const [nextGame, setNextGame] = useState(true);
+
+let interval = null;
+
+const GameApp = (props) => {
   const [isActive, setIsActive] = useState(false);
   const [seconds, setSeconds] = useState();
   const [random, setRandom] = useState();
-  const [arr] = useState(_times(100, Number));
-  const [chooseTrue, setChooseTrue] = useState(false);
+  const [arr] = useState(_times(100, Number)); // массив от 0-100
+  const [green, setGreen] = useState([]);
+  const [red, setRed] = useState([]);
   const [endTimes, setEndTimes] = useState(false);
   const [youWin, setYouWin] = useState(0);
   const [aiWin, setAiWin] = useState(0);
-  const [showModal, setShowModal] = useState(false);
-  const [input, setInput] = useState();
   const [oneClick, setOneClick] = useState(false);
   const WIN_POINT = 9;
-  const disabledButton = firstGame || !input;
+  const secondsRedux = props.register.inputValue;
+  const disabledButton = secondsRedux > 0 ? false : true;
+  const [arrRandom, serArrRandom] = useState(_times(100, Number));  // массив от 0-100
+  const randomRedux = props.register.random;
+
+  const randomNumber = () => {  // для вычисления рандомного числа по которому ДИВ нужно нажать
+    let number = _sample(arrRandom); // рандомный элемент из масива что бы не повторялись числа.
+    serArrRandom(arrRandom.filter(n => n != number))
+    //setRandom(number);
+    randomlDispatch(number);
+  };
 
   const handleStartGame = () => (
-    setSeconds(input),
-    setRandom(_random(1, 100)),
-    setIsActive(true),
-    setFirstGame(true),
-    setNextGame(false)
+    setSeconds(secondsRedux),
+    randomNumber(),
+    setIsActive(true)
   );
 
   const handleNextGame = () => (
-    setSeconds(input),
-    setChooseTrue(false),
+    setSeconds(secondsRedux),
     setEndTimes(false),
-    setFirstGame(false),
-    setRandom(null),
-    setNextGame(true),
-    setOneClick(false)
+    randomNumber(),
+    setOneClick(false),
+    setIsActive(true)
   );
 
-  const whoWin = () => (
-    setShowModal(aiWin === WIN_POINT || youWin === WIN_POINT)
-  );
-
-  const handleClick = (e) => {
-    if (firstGame) {
-    if (random === +e.target.id && !endTimes && !oneClick) {
-      setYouWin(youWin + 1);
+  const whoWin = (newAiWin, newYouWin) => {  // для определения кто выиграл и нужно ли закончить игру
+    if (newAiWin === WIN_POINT || newYouWin === WIN_POINT) {
+      setSeconds(0);
       setIsActive(false);
-      setChooseTrue(true);
+      showModalDispatch(true);
+    }
+      return;
+  };
+
+  const handleClick = (e) => {  // определение правильности выбора и  случайных нажатий
+    if (isActive || endTimes) {
+    if (randomRedux === +e.target.id && !endTimes && !oneClick) {
+      setGreen([...green, +e.target.id]);
       setOneClick(true);
-      whoWin();
+      setYouWin(prev => {
+        const qq = prev + 1;
+        whoWin(aiWin, qq);
+        handleNextGame();
+        return qq;
+      });
     } else {
-      setIsActive(false);
+      setRed([...red, randomRedux]);
       setOneClick(true);
-      setAiWin((oneClick ? aiWin + 0 : aiWin + 1));
+      setAiWin(prev => {
+        const qq = oneClick ? prev + 0 : prev + 1;
+        whoWin(qq, youWin);
+        handleNextGame();
+        return qq;
+      });
     }
   } else {
     return;
   }
   };
 
-  const getContainerColor = (e) => {
-    if (isActive || !firstGame) {
-      if (random === e) {
-        return 'yellow';
-      } else {
-        return 'blue';
-      }
-    } else if (random === e && chooseTrue) {
-      return 'green';
-    } else if (!chooseTrue) {
-      return 'red';
-    } else {
-      return 'blue';
-    }
-  };
-
-  useEffect(() => {
-    let interval = null;
+  useEffect(() => {  // в хуке делаю интервал для отсчета времени
 
     if (isActive) {
       interval = setInterval(() => {
         setSeconds(sec => {
           if (sec === 0) {
-            clearInterval(interval);
-            setIsActive(false);
-            setSeconds(0);
-            setOneClick(true);
+            const randomReduxq = props.register.random;
+            setEndTimes(true);
+           setIsActive(false);
 
-            if (!chooseTrue) { setEndTimes(true); }
-            setAiWin(prev => prev + 1);
-            whoWin();
+            setRed( prevRed => [...prevRed, randomReduxq]);
+            console.log(randomReduxq);
+            console.log(props.register.random);
+            setAiWin(prev => {
+              const qq = prev + 1;
+
+
+              whoWin(qq, youWin);
+              handleNextGame();
+              return qq;
+
+            });
+            return sec;
           } else {
             return sec - 1;
           }
         });
       }, 50);
-    } else if (!isActive) {
+    } else {
       clearInterval(interval);
     }
 
     return () => clearInterval(interval);
   }, [isActive]);
 
-  const handleClose = () => (
-    setShowModal(false),
-    setAiWin(0),
-    setYouWin(0),
-    setFirstGame(false),
-    setNextGame(true),
-    setRandom(),
-    setInput(),
-    setOneClick(false)
+  const inputSeconds = e => (   // для диспатча значения из инпута в стайте редакса
+    props.inputSec(e.target.value)
   );
 
-  const inputSeconds = e => (
-    props.inputName(e.target.value)
+  const showModalDispatch = e => ( // для диспатча значения из инпута в стайте редакса
+    props.showModal(e)
+  );
+
+  const randomlDispatch = e => ( // для диспатча значения из инпута в стайте редакса
+    props.random(e)
   );
 
   return (
@@ -126,9 +134,8 @@ const gameApp = (props) => {
       <input
         type="number"
         className="form-control"
-        value={input}
         placeholder="Choose your speed (ms)"
-
+        onChange={inputSeconds}
       />
       <h1 className="h1">{seconds}</h1>
 
@@ -146,7 +153,12 @@ const gameApp = (props) => {
         {arr.map((el, i) => (
           <div
             key={el}
-            className={`blue ${getContainerColor(i)}`}
+            className={classNames({
+              'blue': true,
+              'yellow': randomRedux === i && !oneClick,
+              'green': green.includes(i),
+              'red': red.includes(i),
+                })}
             id={i}
             onClick={handleClick}
           >
@@ -163,36 +175,11 @@ const gameApp = (props) => {
         >
               START
         </button>
-        <button
-          type="submit"
-          className="btn btn-primary btn-sm"
-          disabled={nextGame}
-          onClick={handleNextGame}
-        >
-              Next game
-        </button>
       </div>
 
-      <Modal show={showModal} onHide={handleClose}>
-        <Modal.Header closeButton>
-          <Modal.Title>{aiWin > youWin ? 'AI WIN' : 'YOU WIN'}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Modal.Title>
-              Next Game ?
-          </Modal.Title>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            Close
-          </Button>
-          <Button variant="primary" onClick={handleClose}>
-            Ok
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      <Modal aiWin={aiWin} youWin={youWin}/>
     </div>
   );
 };
 
-export default gameApp;
+export default GameApp;
