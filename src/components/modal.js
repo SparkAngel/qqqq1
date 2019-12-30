@@ -52,4 +52,4 @@ const mapDispatchToProps = (dispatch) => {
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(ModalComponent);;
+export default connect(mapStateToProps, mapDispatchToProps)(ModalComponent);

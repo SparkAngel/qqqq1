@@ -1,6 +1,6 @@
 /*eslint-disable*/
 import { connect } from 'react-redux';
-import { showModalCreator, inputNameCreator, randomCreator } from '../reducers/gameReducer';
+import { showModalCreator, inputNameCreator, randomCreator, setRedCreator, setGreenCreator, setIsActiveCreator, setEndTimesCreator, setAiWinCreator } from '../reducers/gameReducer';
 import gameApp from '../components/gameApp';
 
 const mapStateToProps = (state) => {
@@ -17,8 +17,23 @@ const mapDispatchToProps = (dispatch) => {
     showModal: (value) => {
       dispatch(showModalCreator(value));
     },
-    random: (value) => {
-      dispatch(randomCreator(value));
+    isActive: (value) => {
+      dispatch(setIsActiveCreator(value));
+    },
+    endTimes: (value) => {
+      dispatch(setEndTimesCreator(value));
+    },
+    random: () => {
+      dispatch(randomCreator());
+    },
+    setGreenColor: (value) => {
+      dispatch(setGreenCreator(value));
+    },
+    setRedColor: (value) => {
+      dispatch(setRedCreator(value));
+    },
+    setAiWin: (value) => {
+      dispatch(setAiWinCreator(value));
     },
   };
 };
