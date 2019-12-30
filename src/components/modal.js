@@ -6,13 +6,9 @@ import Button from 'react-bootstrap/Button';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
-const ModalComponent = (props) => {
-  const show = props.register.show;
-  const aiWin = props.aiWin;
-  const youWin = props.youWin;
-
+const ModalComponent = ({aiWin, showModal, youWin, register:{show}}) => {
   const handleClose = () => (       //функция для диспатча в редакс и закрытия модпльного окна
-    props.showModal(false),
+    showModal(false),
     window.location.reload()
   );
 

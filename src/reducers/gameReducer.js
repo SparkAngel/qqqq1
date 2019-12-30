@@ -2,23 +2,24 @@ import _sample from 'lodash/sample';
 import _times from 'lodash/times';
 
 const initialState = {
-  inputValue: 0,
+  inputSeconds: 0,
   show: false,
-  random: null,
+  randomNumber: null,
   arrRandom: _times(100, Number),
   redColor: [],
   greenColor: [],
   isActive: false,
   endTimes: false,
   aiWin: 0,
+  youWin: 0,
 };
 
-const gameReducer = (state = initialState, action) => {
+export default (state = initialState, action) => {
   switch (action.type) {
     case 'INPUT_SEC':
       return {
         ...state,
-        inputValue: action.value,
+        inputSeconds: action.value,
       };
     case 'ACTIVE_GAME':
       return {
@@ -39,7 +40,7 @@ const gameReducer = (state = initialState, action) => {
       let number = _sample(state.arrRandom);
       return {
         ...state,
-        random: number,
+        randomNumber: number,
         arrRandom: state.arrRandom.filter(n => n != number),
         };
     case 'COLOR_GREEN':
@@ -48,7 +49,6 @@ const gameReducer = (state = initialState, action) => {
         greenColor: [...state.greenColor, action.value],
         };
     case 'COLOR_RED':
-      console.log(action.value);
       return {
         ...state,
         redColor: [...state.redColor, action.value],
@@ -57,6 +57,11 @@ const gameReducer = (state = initialState, action) => {
       return {
         ...state,
         aiWin: state.aiWin + action.value,
+        };
+    case 'YOU_WIN':
+      return {
+        ...state,
+        youWin: state.youWin + action.value,
         };
     default:
       return state;
@@ -79,4 +84,4 @@ export const setGreenCreator = value => ({ type: 'COLOR_GREEN', value});
 
 export const setAiWinCreator = value => ({ type: 'AI_WIN', value});
 
-export default gameReducer;
+export const setYouWinCreator = value => ({ type: 'YOU_WIN', value});
